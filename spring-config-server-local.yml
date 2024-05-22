@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: spring-config-server
+  rabbitmq:
+    host: localhost
+logging:
+  level:
+    org.springframework.cloud.config: WARN

@@ -1,0 +1,30 @@
+spring:
+  cloud:
+  refresh:
+    enabled: true
+  gateway:
+    default-filters: LoggingGatewayFilter
+
+  config:
+    server:
+      native:
+        default-label: main
+        add-label-locations: false
+        search-locations:
+          - file://${HOME}/Dev/workspace/Leandro-Labs/spring_config_repo/{application}
+loki:
+  url: "http://${LOKI_URL:localhost}:3100/loki/api/v1/push"
+  jobName: ${LOKI_JOB_NAME:spring-api-gateway}
+
+management:
+  endpoint:
+    health:
+      enabled: true
+
+
+logging:
+  level:
+    org.springframework.web: INFO
+    org.springframework.boot: INFO
+    org.springframework.cloud.gateway: INFO
+    com.github.loki4j: INFO
