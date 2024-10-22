@@ -1,15 +1,4 @@
 spring:
-  cloud:
-  refresh:
-    enabled: true
-
-  gateway:
-    routes:
-      - id: users
-        uri: http://localhost:8091
-        predicates:
-          - Path=/users/**  
-
   config:
     server:
       native:
@@ -19,19 +8,15 @@ spring:
           - file://${HOME}/Dev/workspace/Leandro-Labs/spring_config_repo/{application}
 loki:
   url: "http://${LOKI_URL:localhost}:3100/loki/api/v1/push"
-  jobName: ${LOKI_JOB_NAME:spring-api-gateway}
+  jobName: ${LOKI_JOB_NAME:spring-user}
 
 management:
   endpoint:
     health:
       enabled: true
 
-
 logging:
   level:
-    root: info
-    br.dev.leandro.spring.cloud.filter.AuditGlobalFilter: INFO
-    org.springframework.cloud.gateway: DEBUG
     org.springframework.web: INFO
     org.springframework.boot: INFO
     com.github.loki4j: INFO

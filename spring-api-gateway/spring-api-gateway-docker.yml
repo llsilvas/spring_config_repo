@@ -1,5 +1,18 @@
+spring: 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://${KEYCLOAK_URL:localhost:8080}/realms/myrealm/protocol/openid-connect/certs
+  gateway:
+    routes:
+      - id: users
+        uri: http://spring-user:8091
+        predicates:
+          - Path=/users/**
 management:
   endpoints:
     web:
       exposure:
-        include: refresh
+        include: '*'
+

@@ -7,5 +7,6 @@ management:
 
 logging:
   level:
+    org.springframework.security: DEBUG
     org.springframework.cloud.gateway: DEBUG
     com.github.loki4j: INFO
