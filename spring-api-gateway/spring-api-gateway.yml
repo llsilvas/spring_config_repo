@@ -1,22 +1,28 @@
 spring:
   cloud:
-  refresh:
-    enabled: true
+    refresh:
+      enabled: true
+    config:
+      fail-fast: true
+      retry:
+        max-attempts: 6
+        initial-interval: 2000
+        multiplier: 1.5
+        max-interval: 10000
+    
+    # Rotas para serviços externos 
+    gateway:
+      routes:
+        - id: users
+          uri: http://localhost:8091
+          predicates:
+            - Path=/users/**  
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCircuitBreaker
+                fallbackUri: forward:/fallback/user
 
-  gateway:
-    routes:
-      - id: users
-        uri: http://localhost:8091
-        predicates:
-          - Path=/users/**  
-
-  config:
-    server:
-      native:
-        default-label: main
-        add-label-locations: false
-        search-locations:
-          - file://${HOME}/Dev/workspace/Leandro-Labs/spring_config_repo/{application}
 loki:
   url: "http://${LOKI_URL:localhost}:3100/loki/api/v1/push"
   jobName: ${LOKI_JOB_NAME:spring-api-gateway}
@@ -26,12 +32,27 @@ management:
     health:
       enabled: true
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      userServiceCircuitBreaker:
+        register-health-indicator: true
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state:
+          seconds: 10
+        permitted-number-of-calls-in-half-open-state: 3
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+
 
 logging:
   level:
-    root: info
+    root: INFO
     br.dev.leandro.spring.cloud.filter.AuditGlobalFilter: INFO
     org.springframework.cloud.gateway: DEBUG
     org.springframework.web: INFO
     org.springframework.boot: INFO
     com.github.loki4j: INFO
+    io.github.resilience4j.circuitbreaker: DEBUG
