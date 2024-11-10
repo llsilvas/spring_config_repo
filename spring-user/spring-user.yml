@@ -11,12 +11,23 @@ loki:
   jobName: ${LOKI_JOB_NAME:spring-user}
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, refresh
   endpoint:
-    health:
+    refresh:
       enabled: true
+
+
+app:
+  mensagem:
+    usuario: "Olá Usuário, bom dia atualizado!"     
 
 logging:
   level:
     org.springframework.web: INFO
     org.springframework.boot: INFO
     com.github.loki4j: INFO
+    org.springframework.security: DEBUG
+    org.springframework.cloud.bus: INFO

@@ -22,6 +22,15 @@ spring:
               args:
                 name: userServiceCircuitBreaker
                 fallbackUri: forward:/fallback/user
+        - id: produtos
+          uri: http://localhost:8092
+          predicates:
+            - Path=/users/**  
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCircuitBreaker
+                fallbackUri: forward:/fallback/user
 
 loki:
   url: "http://${LOKI_URL:localhost}:3100/loki/api/v1/push"
@@ -51,8 +60,12 @@ logging:
   level:
     root: INFO
     br.dev.leandro.spring.cloud.filter.AuditGlobalFilter: INFO
-    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway: INFO
     org.springframework.web: INFO
     org.springframework.boot: INFO
-    com.github.loki4j: INFO
-    io.github.resilience4j.circuitbreaker: DEBUG
+    io.github.resilience4j.circuitbreaker: INFO
+    org.springframework.cloud: INFO
+    org.springframework.cloud.config: INFO
+    com.github.loki4j.logback: INFO
+    org.springframework.security: INFO
+    org.springframework.cloud.bus: INFO
