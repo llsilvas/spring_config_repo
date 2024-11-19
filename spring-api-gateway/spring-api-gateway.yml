@@ -1,4 +1,4 @@
-spring:
+ spring:
   cloud:
     refresh:
       enabled: true
@@ -11,26 +11,19 @@ spring:
         max-interval: 10000
     
     # Rotas para serviços externos 
-    gateway:
-      routes:
-        - id: users
-          uri: http://localhost:8091
-          predicates:
-            - Path=/users/**  
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: userServiceCircuitBreaker
-                fallbackUri: forward:/fallback/user
-        - id: produtos
-          uri: http://localhost:8092
-          predicates:
-            - Path=/users/**  
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: userServiceCircuitBreaker
-                fallbackUri: forward:/fallback/user
+    # gateway:
+    #   routes:
+    #     - id: users
+    #       uri: http://localhost:8091
+    #       predicates:
+    #         - Path=/users/**  
+    #       filters:
+    #         # - name: CircuitBreaker
+    #         #   args:
+    #         #     name: userServiceCircuitBreaker
+    #         #     fallbackUri: forward:/fallback/user
+    #         - TokenRelay
+
 
 loki:
   url: "http://${LOKI_URL:localhost}:3100/loki/api/v1/push"
