@@ -1,11 +1,24 @@
+server:
+  port: 8091
 spring:
-  config:
-    server:
-      native:
-        default-label: main
-        add-label-locations: false
-        search-locations:
-          - file://${HOME}/Dev/workspace/Leandro-Labs/spring_config_repo/{application}
+  application:
+    name: spring-user
+  cloud:
+    config:
+      fail-fast: true
+      retry:
+        max-attempts: 6
+        initial-interval: 2000
+        multiplier: 1.5
+        max-interval: 10000
+    bus:
+      refresh:
+        enabled: true
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: 5672
+    connection-timeout: 5
+
 loki:
   url: "http://${LOKI_URL:localhost}:3100/loki/api/v1/push"
   jobName: ${LOKI_JOB_NAME:spring-user}
