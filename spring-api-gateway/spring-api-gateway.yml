@@ -1,7 +1,10 @@
- spring:
+server:
+  port: 9999
+spring:
+  application:
+    name: spring-api-gateway
+
   cloud:
-    refresh:
-      enabled: true
     config:
       fail-fast: true
       retry:
@@ -9,21 +12,30 @@
         initial-interval: 2000
         multiplier: 1.5
         max-interval: 10000
-    
+    bus:
+      refresh:
+        enabled: true
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: 5672
+    connection-timeout: 5
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://${KEYCLOAK_URL:localhost:8443}/realms/event-management/protocol/openid-connect/certs
+          issuer-uri: http://${KEYCLOAK_URL:localhost:8443}/realms/event-management
+
+
     # Rotas para serviços externos 
+
     gateway:
       routes:
-        - id: users
-          uri: http://localhost:8091
+        - id: user-service
+          uri: http://localhost:8091 # Endereço do User Service
           predicates:
-            - Path=/users/**  
-          filters:
-            # - name: CircuitBreaker
-            #   args:
-            #     name: userServiceCircuitBreaker
-            #     fallbackUri: forward:/fallback/user
-            - TokenRelay
-
+            - Path=/api/users/** # Requisições que começam com /api/users/
 
 loki:
   url: "http://${LOKI_URL:localhost}:3100/loki/api/v1/push"

@@ -1,8 +1,10 @@
 server:
   port: 8091
+
 spring:
   application:
     name: spring-user
+
   cloud:
     config:
       fail-fast: true
@@ -14,6 +16,21 @@ spring:
     bus:
       refresh:
         enabled: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://${KEYCLOAK_JWK_SET_URI:localhost:8443}/realms/event-management/protocol/openid-connect/certs
+          issuer-uri: http://${KEYCLOAK_ISSUER_URI:localhost:8443}/realms/event-management
+
+  keycloak:
+    admin:
+      client-id: ${KEYCLOAK_CLIENT_ID:user-service-admin}
+      client-secret: ${KEYCLOAK_CLIENT_SECRET:default-secret}  # Nunca manter senhas reais aqui, apenas para fallback
+      auth-server-url: http://${KEYCLOAK_AUTH_SERVER_URL://localhost:8443}
+      realm: ${KEYCLOAK_REALM:event-management}
+
   rabbitmq:
     host: ${SPRING_RABBITMQ_HOST:localhost}
     port: 5672
@@ -24,23 +41,36 @@ loki:
   jobName: ${LOKI_JOB_NAME:spring-user}
 
 management:
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.request: true
+  observations:
+    key-values:
+      application: spring-user
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:
-        include: health, info, refresh
-  endpoint:
-    refresh:
-      enabled: true
+        include: health, metrics, prometheus, info
 
-
-app:
-  mensagem:
-    usuario: "Olá Usuário, bom dia atualizado!"     
+otel:
+  logs:
+    exporter: none
+  traces:
+    exporter: none
+  metrics:
+    exporter: none
 
 logging:
   level:
+    root: INFO
     org.springframework.web: INFO
     org.springframework.boot: INFO
-    com.github.loki4j: INFO
-    org.springframework.security: DEBUG
     org.springframework.cloud.bus: INFO
+    org.springframework.cloud: DEBUG 
+    org.springframework.cloud.config: DEBUG
+    org.keycloak: DEBUG
+debug: true
