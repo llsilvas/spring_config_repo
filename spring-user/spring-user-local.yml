@@ -15,14 +15,5 @@ management:
       exposure:
         include: '*'
 
-otel:
-  exporter:
-    otlp:
-      endpoint: http://localhost:3200/v1/traces
-      logs:
-        protocol: http/protobuf
-  resource:
-    attributes: 'service.name=spring-user, environment=develop'
-  sdk:
-    traces:
-      sample-rate: 1.0
+app: 
+  message: Local message Teste
