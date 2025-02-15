@@ -3,10 +3,9 @@ spring:
     gateway:
       routes:
         - id: users
-          uri: http://spring-user:8081
-
+          uri: http://spring-user:8091
           predicates:
-            - Path=/users/**  
+            - Path=/api/users/** # Requisições que começam com /api/users/
           filters:
             - name: CircuitBreaker
               args:

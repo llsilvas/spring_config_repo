@@ -24,9 +24,9 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://${KEYCLOAK_URL:localhost:8443}/realms/event-management/protocol/openid-connect/certs
-          issuer-uri: http://${KEYCLOAK_URL:localhost:8443}/realms/event-management
-
+          issuer-uri: http://${KEYCLOAK_URL}:8443/realms/event-management
+          jwk-set-uri: http://${KEYCLOAK_URL}:8443/realms/event-management/protocol/openid-connect/certs
+  
 
     # Rotas para serviços externos 
 
@@ -62,6 +62,10 @@ resilience4j:
 
 
 logging:
+  pattern:
+    correlation: '%X{traceId:-} %X{spanId:-}'
+    level: '%-5level [${spring.application.name}]'
+  include-application-name: true
   level:
     root: INFO
     br.dev.leandro.spring.cloud.filter.AuditGlobalFilter: INFO
@@ -74,3 +78,6 @@ logging:
     com.github.loki4j.logback: INFO
     org.springframework.security: INFO
     org.springframework.cloud.bus: INFO
+    org.keycloak: INFO
+    io.opentelemetry: INFO
+    io.micrometer: INFO
