@@ -1,76 +1,81 @@
-server:
-  port: 9999
 spring:
   application:
     name: spring-api-gateway
 
+  # Ativa importação via Config Server remoto
+  config:
+    import: optional:configserver:http://${SPRING_CONFIG_SERVER:localhost}:8888
+
+  # Define o perfil ativo por variável de ambiente
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
   cloud:
     config:
-      fail-fast: true
-      retry:
-        max-attempts: 6
-        initial-interval: 2000
-        multiplier: 1.5
-        max-interval: 10000
-    bus:
-      refresh:
-        enabled: true
-  rabbitmq:
-    host: ${SPRING_RABBITMQ_HOST:localhost}
-    port: 5672
-    connection-timeout: 5
+      enabled: true
 
+    # === GATEWAY (Rotas definidas nos perfis) ===
+    gateway:
+      default-filters: [] # Global filters se necessário
+
+  # === JWT / OAUTH2 ===
   security:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://${KEYCLOAK_URL:localhost:8443}/realms/event-management/protocol/openid-connect/certs
-          issuer-uri: http://${KEYCLOAK_URL:localhost:8443}/realms/event-management
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8443/realms/event-management}
 
+  # === KEYCLOAK ADMIN ===
+  keycloak:
+    admin:
+      client-id: ${KEYCLOAK_CLIENT_ID:user-service-admin}
+      client-secret: ${KEYCLOAK_CLIENT_SECRET:default-secret}
+      auth-server-url: ${KEYCLOAK_AUTH_URL:http://localhost:8443}
+      realm: ${KEYCLOAK_REALM:event-management}
 
-    # Rotas para serviços externos 
+  # === RABBITMQ ===
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: 5672
+    connection-timeout: 5s
 
-    gateway:
-      routes:
-        - id: user-service
-          uri: http://localhost:8091 # Endereço do User Service
-          predicates:
-            - Path=/api/users/** # Requisições que começam com /api/users/
+# === CONFIGURAÇÕES DO SERVIDOR ===
+server:
+  port: 9999
 
+# === EXPORTAÇÃO PARA LOKI ===
 loki:
-  url: "http://${LOKI_URL:localhost}:3100/loki/api/v1/push"
-  jobName: ${LOKI_JOB_NAME:spring-api-gateway}
+  url: ${LOKI_URL:http://localhost:3100}/loki/api/v1/push
+  jobName: ${LOKI_JOB_NAME:spring-event-service}
 
+# === ACTUATOR / TRACING ===
 management:
-  endpoint:
-    health:
-      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus, info, refresh, circuitbreakers
+  tracing:
+    sampling:
+      probability: 1.0
 
-resilience4j:
-  circuitbreaker:
-    instances:
-      userServiceCircuitBreaker:
-        register-health-indicator: true
-        sliding-window-type: COUNT_BASED
-        sliding-window-size: 5
-        failure-rate-threshold: 50
-        wait-duration-in-open-state:
-          seconds: 10
-        permitted-number-of-calls-in-half-open-state: 3
-        minimum-number-of-calls: 5
-        automatic-transition-from-open-to-half-open-enabled: true
-
-
+# === LOGGING + CORRELAÇÃO ===
 logging:
+  pattern:
+    correlation: '%X{traceId:-} %X{spanId:-}'
+    level: '%-5level [${spring.application.name}]'
+  include-application-name: true
   level:
     root: INFO
-    br.dev.leandro.spring.cloud.filter.AuditGlobalFilter: INFO
-    org.springframework.cloud.gateway: INFO
     org.springframework.web: INFO
     org.springframework.boot: INFO
-    io.github.resilience4j.circuitbreaker: INFO
-    org.springframework.cloud: INFO
-    org.springframework.cloud.config: INFO
-    com.github.loki4j.logback: INFO
-    org.springframework.security: INFO
-    org.springframework.cloud.bus: INFO
+    org.springframework.security: WARN
+    org.springframework.cloud: WARN
+    io.opentelemetry: WARN
+    io.micrometer: WARN
+
+# === OTEL (pode ser sobrescrito por perfil) ===
+otel:
+  logs:
+    exporter: none
+  metrics:
+    exporter: none

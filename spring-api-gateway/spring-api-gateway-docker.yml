@@ -3,18 +3,28 @@ spring:
     gateway:
       routes:
         - id: users
-          uri: http://spring-user:8081
-
+          uri: http://spring-user:8091
           predicates:
-            - Path=/users/**  
+            - Path=/api/users/** # Requisições que começam com /api/users/
           filters:
+            - RewritePath=/api/users/(?<segment>.*), /users/${segment}
             - name: CircuitBreaker
               args:
-                name: userServiceCircuitBreaker
+                name: userServiceCB
                 fallbackUri: forward:/fallback/user
-management:
-  endpoints:
-    web:
-      exposure:
-        include: '*'
+
+# === RESILIENCE4J: CIRCUIT BREAKER PARA PRODUÇÃO ===
+resilience4j:
+  circuitbreaker:
+    instances:
+      userServiceCB:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2s
 

@@ -1,11 +1,29 @@
-management:
-  endpoints:
-    web:
-      exposure:
-        include: '*'
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: http://localhost:8091 # Serviço local de desenvolvimento
+          predicates:
+            - Path=/api/users/** # Requisições que começam com /api/users/
+          filters:
+            - RewritePath=/api/users/(?<segment>.*), /users/${segment}
+            - name: CircuitBreaker
+              args:
+                name: userServiceCB
+                fallbackUri: forward:/fallback/user
 
-logging:
-  level:
-    org.springframework.security: DEBUG
-    org.springframework.cloud.gateway: DEBUG
-    com.github.loki4j: INFO
+# === RESILIENCE4J: CIRCUIT BREAKER PARA DEV ===
+resilience4j:
+  circuitbreaker:
+    instances:
+      userServiceCB:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2s
