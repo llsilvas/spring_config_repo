@@ -62,6 +62,10 @@ resilience4j:
 
 
 logging:
+  pattern:
+    correlation: '%X{traceId:-} %X{spanId:-}'
+    level: '%-5level [${spring.application.name}]'
+  include-application-name: true
   level:
     root: INFO
     br.dev.leandro.spring.cloud.filter.AuditGlobalFilter: INFO

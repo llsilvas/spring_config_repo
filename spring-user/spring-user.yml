@@ -16,19 +16,17 @@ spring:
     bus:
       refresh:
         enabled: true
-
   security:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://${KEYCLOAK_JWK_SET_URI:localhost:8443}/realms/event-management/protocol/openid-connect/certs
-          issuer-uri: http://${KEYCLOAK_ISSUER_URI:localhost:8443}/realms/event-management
-
+          issuer-uri: http://${KEYCLOAK_URL}:8443/realms/event-management
+          jwk-set-uri: http://${KEYCLOAK_URL}:8443/realms/event-management/protocol/openid-connect/certs
   keycloak:
     admin:
       client-id: ${KEYCLOAK_CLIENT_ID:user-service-admin}
       client-secret: ${KEYCLOAK_CLIENT_SECRET:default-secret}  # Nunca manter senhas reais aqui, apenas para fallback
-      auth-server-url: http://${KEYCLOAK_AUTH_SERVER_URL://localhost:8443}
+      auth-server-url: http://${KEYCLOAK_AUTH_SERVER_URL:localhost:8443}
       realm: ${KEYCLOAK_REALM:event-management}
 
   rabbitmq:
@@ -41,36 +39,27 @@ loki:
   jobName: ${LOKI_JOB_NAME:spring-user}
 
 management:
-  metrics:
-    distribution:
-      percentiles-histogram:
-        http.server.request: true
-  observations:
-    key-values:
-      application: spring-user
-  tracing:
-    sampling:
-      probability: 1.0
   endpoints:
     web:
       exposure:
-        include: health, metrics, prometheus, info
-
-otel:
-  logs:
-    exporter: none
-  traces:
-    exporter: none
-  metrics:
-    exporter: none
+        include: health, metrics, prometheus, info, refresh, bus-refresh
 
 logging:
+  pattern:
+    correlation: '%X{traceId:-} %X{spanId:-}'
+    level: '%-5level [${spring.application.name}]'
+  include-application-name: true
   level:
     root: INFO
     org.springframework.web: INFO
     org.springframework.boot: INFO
+    org.springframework.security: INFO
     org.springframework.cloud.bus: INFO
-    org.springframework.cloud: DEBUG 
-    org.springframework.cloud.config: DEBUG
-    org.keycloak: DEBUG
-debug: true
+    org.springframework.cloud: INFO 
+    org.springframework.cloud.config: INFO
+    org.keycloak: INFO
+    io.opentelemetry: INFO
+    io.micrometer: INFO
+
+app: 
+  message: Default message
